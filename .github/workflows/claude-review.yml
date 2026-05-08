@@ -1,0 +1,44 @@
+name: Claude Security Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  security-review:
+    runs-on: ubuntu-latest
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Claude security review
+        uses: anthropics/claude-code-action@v1
+        with:
+          prompt: |
+            Perform a security-focused code review of the changes in this pull request.
+
+            Scope: review only the diff against the base branch, but read surrounding
+            code as needed to follow data flow.
+
+            Look specifically for, and report each finding with file:line + severity
+            (critical/high/medium/low/info) + a concrete remediation:
+              - Injection (SQL, command, XSS, SSRF, path traversal, template, LDAP)
+              - Authentication / authorization flaws (missing checks, IDOR, priv-esc)
+              - Hardcoded secrets, credentials, tokens, or API keys
+              - Cryptographic misuse (weak algorithms, hardcoded keys, bad randomness)
+              - Unsafe deserialization (pickle, yaml.load, eval, exec)
+              - Insecure input validation and unsafe redirects
+              - Sensitive data exposure in logs / errors / responses
+              - Race conditions and TOCTOU
+              - Dependency or supply-chain red flags introduced by this PR
+
+            Output a structured markdown report grouped by severity. End with a single
+            "Verdict" line: SAFE TO MERGE / CHANGES REQUESTED / BLOCK.
