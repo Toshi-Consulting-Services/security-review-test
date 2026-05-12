@@ -14,3 +14,4 @@ post findings as a PR comment.
 Required: an `ANTHROPIC_API_KEY` GitHub Actions secret on this repo.
 
 <!-- trigger Phase 3 reviewdog validation 2026-05-12T12:01:50Z -->
+<!-- reviewdog retry 1778587635 -->
